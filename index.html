@@ -1,0 +1,997 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Fundacion dedicada a transformar vidas y construir un futuro mejor para comunidades vulnerables. Unete a nuestra causa.">
+    <meta name="keywords" content="fundacion, ONG, donaciones, voluntariado, comunidad, ayuda social">
+    <meta name="author" content="Fundacion Esperanza Viva">
+    <title>Fundacion Esperanza Viva - Transformando Vidas</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Chart.js para graficos del panel admin -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+    <!-- Google Identity Services (Sign In With Google) -->
+    <script src="https://accounts.google.com/gsi/client" async defer onload="initGoogleSignIn()"></script>
+
+    <!-- Firebase SDK (Auth: Google + Telefono) — respaldo si GIS no está configurado -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+
+    <!-- MSAL.js para autenticacion con Outlook/Microsoft -->
+    <script src="https://alcdn.msauth.net/browser/2.38.0/js/msal-browser.min.js"></script>
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Estilos locales -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- PAGE LOADER -->
+    <div id="page-loader">
+        <div class="loader-orb loader-orb-1"></div>
+        <div class="loader-orb loader-orb-2"></div>
+        <div class="loader-icon-wrap">&#127807;</div>
+        <div class="loader-brand">Fundación GAP</div>
+        <div class="loader-tagline">Transformando vidas</div>
+        <div class="loader-track"><div class="loader-fill"></div></div>
+        <div class="loader-dots">
+            <div class="loader-dot"></div>
+            <div class="loader-dot"></div>
+            <div class="loader-dot"></div>
+        </div>
+    </div>
+
+    <!-- Sidebar Overlay (Mobile) -->
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Login Modal -->
+    <div class="modal-overlay" id="loginModal">
+        <div class="modal">
+            <button class="modal-close" onclick="closeLoginModal()" aria-label="Cerrar">
+                <i data-lucide="x" width="18" height="18"></i>
+            </button>
+
+            <div style="text-align:center; margin-bottom: 6px;">
+                <div style="width:48px;height:48px;background:var(--gradient-primary);border-radius:var(--radius-md);display:inline-flex;align-items:center;justify-content:center;font-size:1.3rem;margin-bottom:8px;">&#127793;</div>
+            </div>
+
+            <h2>Bienvenido</h2>
+            <p class="modal-subtitle">Inicia sesion para ser parte del cambio</p>
+
+            <div class="social-login-btns">
+                <button class="social-btn google" id="btnGoogleLogin" onclick="loginWithGoogle()">
+                    <svg viewBox="0 0 24 24" width="20" height="20">
+                        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/>
+                        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                    </svg>
+                    Continuar con Google
+                </button>
+
+                <button class="social-btn microsoft" id="btnMicrosoftLogin" onclick="loginWithMicrosoft()">
+                    <svg viewBox="0 0 24 24" width="20" height="20">
+                        <rect fill="#F25022" x="1" y="1" width="10" height="10"/>
+                        <rect fill="#7FBA00" x="13" y="1" width="10" height="10"/>
+                        <rect fill="#00A4EF" x="1" y="13" width="10" height="10"/>
+                        <rect fill="#FFB900" x="13" y="13" width="10" height="10"/>
+                    </svg>
+                    Continuar con Outlook
+                </button>
+            </div>
+
+            <div class="divider"><span>o con tu telefono</span></div>
+
+            <div class="phone-login-form">
+                <div class="form-group">
+                    <label for="phoneNumber">Numero de telefono</label>
+                    <div class="phone-input-group">
+                        <input type="text" class="form-input country-code" value="+57" id="countryCode" placeholder="+57">
+                        <input type="tel" class="form-input" id="phoneNumber" placeholder="300 123 4567">
+                    </div>
+                </div>
+
+                <div id="recaptcha-container"></div>
+
+                <button class="btn btn-accent w-full" id="btnPhoneLogin" onclick="loginWithPhone()" style="margin-top: 8px;">
+                    <i data-lucide="smartphone" width="18" height="18"></i>
+                    Enviar codigo de verificacion
+                </button>
+
+                <div id="otpSection" class="hidden mt-2">
+                    <div class="form-group">
+                        <label for="otpCode">Codigo de verificacion</label>
+                        <input type="text" class="form-input" id="otpCode" placeholder="123456" maxlength="6">
+                    </div>
+                    <button class="btn btn-accent w-full" onclick="verifyOtp()">
+                        Verificar codigo
+                    </button>
+                </div>
+            </div>
+
+            <div class="divider"><span>o con correo y contraseña</span></div>
+
+            <!-- FORMULARIO DE INICIO DE SESION -->
+            <div id="loginFormSection" class="credentials-login-form">
+                <div class="form-group">
+                    <label for="usernameInput">Correo electrónico</label>
+                    <input type="email" class="form-input" id="usernameInput" placeholder="admin@fundacion.org">
+                </div>
+                <div class="form-group" style="margin-top: 12px;">
+                    <label for="passwordInput">Contraseña</label>
+                    <input type="password" class="form-input" id="passwordInput" placeholder="Contraseña">
+                </div>
+                <button class="btn btn-accent w-full" onclick="loginWithCredentials()" style="margin-top: 16px;">
+                    <i data-lucide="key" width="18" height="18"></i>
+                    Iniciar sesión
+                </button>
+                <p style="text-align:center;margin-top:14px;font-size:0.85rem;color:var(--text-secondary);">
+                    ¿No tienes cuenta? <a href="#" onclick="toggleAuthForm('register'); return false;" style="color:var(--primary-600);font-weight:600;">Crear cuenta</a>
+                </p>
+            </div>
+
+            <!-- FORMULARIO DE REGISTRO -->
+            <div id="registerFormSection" class="credentials-login-form" style="display:none;">
+                <div class="form-group">
+                    <label for="registerName">Nombre completo</label>
+                    <input type="text" class="form-input" id="registerName" placeholder="Tu nombre completo">
+                </div>
+                <div class="form-group" style="margin-top: 12px;">
+                    <label for="registerEmail">Correo electrónico</label>
+                    <input type="email" class="form-input" id="registerEmail" placeholder="tucorreo@ejemplo.com">
+                </div>
+                <div class="form-group" style="margin-top: 12px;">
+                    <label for="registerPassword">Contraseña</label>
+                    <input type="password" class="form-input" id="registerPassword" placeholder="Mínimo 6 caracteres">
+                </div>
+                <div class="form-group" style="margin-top: 12px;">
+                    <label for="registerPasswordConfirm">Confirmar contraseña</label>
+                    <input type="password" class="form-input" id="registerPasswordConfirm" placeholder="Repite tu contraseña">
+                </div>
+                <button class="btn btn-accent w-full" onclick="registerWithCredentials()" style="margin-top: 16px;">
+                    <i data-lucide="user-plus" width="18" height="18"></i>
+                    Crear mi cuenta
+                </button>
+                <p style="text-align:center;margin-top:14px;font-size:0.85rem;color:var(--text-secondary);">
+                    ¿Ya tienes cuenta? <a href="#" onclick="toggleAuthForm('login'); return false;" style="color:var(--primary-600);font-weight:600;">Iniciar sesión</a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- APP LAYOUT -->
+    <div class="app-layout">
+        <!-- SIDEBAR -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <div class="sidebar-logo-icon">&#127793;</div>
+                    <div class="sidebar-logo-text">
+                        <h2>Esperanza Viva</h2>
+                        <span>Fundacion</span>
+                    </div>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <p class="nav-section-title">Menu Principal</p>
+                <a class="nav-item active" data-page="inicio" onclick="navigateTo('inicio')">
+                    <i data-lucide="home" width="20" height="20"></i>
+                    Inicio
+                </a>
+                <a class="nav-item" data-page="quienes-somos" onclick="navigateTo('quienes-somos')">
+                    <i data-lucide="heart-handshake" width="20" height="20"></i>
+                    Quienes Somos
+                </a>
+                <a class="nav-item" data-page="labores" onclick="navigateTo('labores')">
+                    <i data-lucide="images" width="20" height="20"></i>
+                    Nuestras Labores
+                </a>
+                <a class="nav-item" data-page="donaciones" onclick="navigateTo('donaciones')">
+                    <i data-lucide="hand-coins" width="20" height="20"></i>
+                    Donaciones
+                </a>
+                <a class="nav-item" data-page="foro" onclick="navigateTo('foro')">
+                    <i data-lucide="message-circle" width="20" height="20"></i>
+                    Comunidad
+                    <span class="nav-badge" id="forumBadge" style="display:none;">0</span>
+                </a>
+
+                <p class="nav-section-title admin-only">Administracion</p>
+                <a class="nav-item admin-only" data-page="admin-dashboard" onclick="navigateTo('admin-dashboard')">
+                    <i data-lucide="layout-dashboard" width="20" height="20"></i>
+                    Dashboard
+                </a>
+                <a class="nav-item admin-only" data-page="admin-donantes" onclick="navigateTo('admin-donantes')">
+                    <i data-lucide="users" width="20" height="20"></i>
+                    Gestion Donantes
+                </a>
+                <a class="nav-item admin-only" data-page="admin-contenido" onclick="navigateTo('admin-contenido')">
+                    <i data-lucide="file-plus" width="20" height="20"></i>
+                    Gestion Contenido
+                </a>
+            </nav>
+
+            <div class="sidebar-user" id="sidebarUser">
+                <div id="sidebarLoginPrompt">
+                    <button class="btn btn-accent w-full btn-sm" onclick="openLoginModal()">
+                        <i data-lucide="log-in" width="16" height="16"></i>
+                        Iniciar sesion
+                    </button>
+                </div>
+                <div id="sidebarUserInfo" class="hidden">
+                    <div class="sidebar-user-info">
+                        <div class="user-avatar" id="userAvatarSidebar">?</div>
+                        <div class="user-details">
+                            <div class="name" id="userNameSidebar">Usuario</div>
+                            <div class="role" id="userRoleSidebar">Miembro</div>
+                        </div>
+                    </div>
+                    <button class="btn btn-ghost w-full btn-sm mt-1" onclick="logout()" style="justify-content:center;color:rgba(255,255,255,0.6);">
+                        <i data-lucide="log-out" width="14" height="14"></i>
+                        Cerrar sesion
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <main class="main-content">
+            <header class="top-bar">
+                <div class="top-bar-left">
+                    <button class="menu-toggle" onclick="toggleSidebar()" aria-label="Menu">
+                        <i data-lucide="menu" width="22" height="22"></i>
+                    </button>
+                    <h1 class="page-title" id="pageTitle">Inicio</h1>
+                </div>
+                <div class="top-bar-right">
+                    <div id="topBarLoginBtn">
+                        <button class="btn-login-topbar" onclick="openLoginModal()">
+                            <i data-lucide="log-in" width="16" height="16"></i>
+                            Ingresar
+                        </button>
+                    </div>
+                    <div id="topBarUserAvatar" class="hidden">
+                        <div class="user-avatar" id="userAvatarTop" style="cursor:pointer;" onclick="toggleSidebar()">?</div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- PAGINA: INICIO -->
+            <section class="page-section active" id="page-inicio">
+                <div class="hero-section">
+                    <div class="hero-bg"></div>
+                    <div class="hero-dots"></div>
+                    <div class="hero-content">
+                        <div class="hero-badge">
+                            <span class="dot"></span>
+                            Transformando vidas desde 2018
+                        </div>
+                        <h1>Construyendo un futuro con <span class="highlight">esperanza</span> para todos</h1>
+                        <p>Somos una fundacion comprometida con el bienestar de las comunidades mas vulnerables. Cada accion cuenta, cada donacion transforma una vida.</p>
+                        <div class="hero-actions">
+                            <button class="btn btn-primary btn-lg" onclick="navigateTo('donaciones')">
+                                <i data-lucide="heart" width="18" height="18"></i>
+                                Hacer una donacion
+                            </button>
+                            <button class="btn btn-secondary btn-lg" onclick="navigateTo('quienes-somos')">
+                                Conocer mas
+                                <i data-lucide="arrow-right" width="18" height="18"></i>
+                            </button>
+                        </div>
+                        <div class="hero-stats">
+                            <div class="hero-stat">
+                                <span class="number">500+</span>
+                                <span class="label">Familias beneficiadas</span>
+                            </div>
+                            <div class="hero-stat">
+                                <span class="number">35</span>
+                                <span class="label">Proyectos realizados</span>
+                            </div>
+                            <div class="hero-stat">
+                                <span class="number">120+</span>
+                                <span class="label">Voluntarios activos</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- PAGINA: QUIENES SOMOS -->
+            <section class="page-section" id="page-quienes-somos">
+                <div class="about-hero">
+                    <div class="section-overline">
+                        <i data-lucide="heart-handshake" width="16" height="16"></i>
+                        Nuestra Historia
+                    </div>
+                    <h2>Mas que una fundacion, somos una familia</h2>
+                    <p>Nacimos del deseo genuino de transformar realidades, llevando esperanza a quienes mas lo necesitan.</p>
+                </div>
+
+                <div class="about-grid">
+                    <div class="about-card reveal reveal-delay-1">
+                        <div class="about-card-icon">
+                            <i data-lucide="sprout" width="28" height="28"></i>
+                        </div>
+                        <h3>Nuestro Origen</h3>
+                        <p>Fundacion Esperanza Viva nacio en 2018 de un grupo de voluntarios que veian la necesidad urgente de apoyar a comunidades vulnerables. Lo que comenzo como pequenas jornadas de ayuda, crecio hasta convertirse en un movimiento transformador que hoy impacta cientos de vidas.</p>
+                    </div>
+                    <div class="about-card reveal reveal-delay-2">
+                        <div class="about-card-icon">
+                            <i data-lucide="target" width="28" height="28"></i>
+                        </div>
+                        <h3>Nuestra Mision</h3>
+                        <p>Promover el desarrollo integral de comunidades vulnerables mediante programas de educacion, salud, alimentacion y empoderamiento social, generando oportunidades reales para un futuro digno y sostenible.</p>
+                    </div>
+                    <div class="about-card reveal reveal-delay-3">
+                        <div class="about-card-icon">
+                            <i data-lucide="eye" width="28" height="28"></i>
+                        </div>
+                        <h3>Nuestra Vision</h3>
+                        <p>Ser reconocidos como un referente de transformacion social en America Latina, construyendo comunidades autosuficientes donde cada persona tenga acceso a las herramientas para alcanzar su maximo potencial.</p>
+                    </div>
+                    <div class="about-card reveal reveal-delay-4">
+                        <div class="about-card-icon">
+                            <i data-lucide="gem" width="28" height="28"></i>
+                        </div>
+                        <h3>Nuestros Valores</h3>
+                        <p>Transparencia en cada accion, empatia con cada persona, compromiso inquebrantable con las comunidades, innovacion en nuestras soluciones y la firme creencia de que cada ser humano merece una vida digna.</p>
+                    </div>
+                </div>
+
+                <div style="text-align:center; margin-top:16px;">
+                    <div class="section-overline">
+                        <i data-lucide="milestone" width="16" height="16"></i>
+                        Linea del Tiempo
+                    </div>
+                    <h3 style="font-size:1.4rem; margin-bottom: 8px;">Nuestro Camino</h3>
+                </div>
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <div class="year">2018 &#8212; El Comienzo</div>
+                        <h4>Primera jornada de ayuda</h4>
+                        <p>Con solo 5 voluntarios y mucha determinacion, realizamos nuestra primera entrega de alimentos y kits escolares a 30 familias.</p>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="year">2019 &#8212; Crecimiento</div>
+                        <h4>Constitucion legal y primer programa permanente</h4>
+                        <p>Nos constituimos legalmente como fundacion y lanzamos el programa "Educacion con Esperanza" beneficiando a 80 ninos.</p>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="year">2020 &#8212; Resiliencia</div>
+                        <h4>Respuesta ante la pandemia</h4>
+                        <p>Adaptamos nuestros programas para llevar ayuda alimentaria y kits de bioseguridad a mas de 200 familias durante la crisis sanitaria.</p>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="year">2022 &#8212; Expansion</div>
+                        <h4>Nuevos programas y alianzas</h4>
+                        <p>Expandimos nuestro alcance a 3 municipios, establecimos alianzas con empresas locales y lanzamos el programa de salud comunitaria.</p>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="year">2024 &#8212; Presente</div>
+                        <h4>Impacto sostenible</h4>
+                        <p>Hoy contamos con mas de 120 voluntarios, hemos beneficiado a mas de 500 familias y seguimos creciendo con el apoyo de nuestra comunidad.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- PAGINA: FEED DE LABORES -->
+            <section class="page-section" id="page-labores">
+                <div style="max-width:800px; margin-bottom:32px;">
+                    <div class="section-overline">
+                        <i data-lucide="images" width="16" height="16"></i>
+                        Evidencias
+                    </div>
+                    <h2 class="section-title">Nuestras Labores</h2>
+                    <p class="section-subtitle">Cada foto cuenta una historia de transformacion. Conoce el impacto real de tu apoyo en las comunidades.</p>
+                </div>
+
+                <div class="feed-grid" id="feedGrid">
+                    <div class="skeleton skeleton-card"></div>
+                    <div class="skeleton skeleton-card"></div>
+                    <div class="skeleton skeleton-card"></div>
+                </div>
+
+                <div class="empty-state hidden" id="feedEmpty">
+                    <div class="empty-icon">
+                        <i data-lucide="image-off" width="32" height="32"></i>
+                    </div>
+                    <h3>Sin publicaciones aun</h3>
+                    <p>Pronto compartiremos evidencias de nuestro trabajo. Vuelve pronto!</p>
+                </div>
+            </section>
+
+            <!-- PAGINA: DONACIONES -->
+            <section class="page-section" id="page-donaciones">
+                <div style="text-align:center; max-width:600px; margin:0 auto 36px;">
+                    <div class="section-overline">
+                        <i data-lucide="hand-coins" width="16" height="16"></i>
+                        Apoya la causa
+                    </div>
+                    <h2 class="section-title">Tu donacion cambia vidas</h2>
+                    <p class="section-subtitle">Cada aporte, sin importar su tamano, contribuye directamente al bienestar de familias que mas lo necesitan.</p>
+                </div>
+
+                <div class="donations-layout">
+                    <div class="donation-form-card">
+                        <h3>&#128154; Realizar una donacion</h3>
+                        <p class="subtitle">Completa el formulario para registrar tu aporte</p>
+
+                        <form id="donationForm" onsubmit="submitDonation(event)">
+                            <div class="form-group">
+                                <label for="donorName">Tu nombre completo</label>
+                                <input type="text" class="form-input" id="donorName" placeholder="Ingresa tu nombre" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="donorEmail">Correo electronico</label>
+                                <input type="email" class="form-input" id="donorEmail" placeholder="correo@ejemplo.com" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Selecciona un monto</label>
+                                <div class="amount-options">
+                                    <div class="amount-option" onclick="selectAmount(this, 20000)">$20.000</div>
+                                    <div class="amount-option" onclick="selectAmount(this, 50000)">$50.000</div>
+                                    <div class="amount-option selected" onclick="selectAmount(this, 100000)">$100.000</div>
+                                    <div class="amount-option" onclick="selectAmount(this, 200000)">$200.000</div>
+                                </div>
+                                <input type="number" class="form-input" id="donationAmount" placeholder="O ingresa otro monto" value="100000" min="1000">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="donationMethod">Metodo de pago</label>
+                                <select class="form-input" id="donationMethod" required>
+                                    <option value="">Selecciona un metodo</option>
+                                    <option value="transferencia">Transferencia bancaria</option>
+                                    <option value="nequi">Nequi</option>
+                                    <option value="daviplata">Daviplata</option>
+                                    <option value="efectivo">Efectivo</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="donationNote">Mensaje (opcional)</label>
+                                <textarea class="form-input" id="donationNote" placeholder="Deja un mensaje de apoyo..."></textarea>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="donationReceipt">Subir comprobante de transferencia (Obligatorio)</label>
+                                <input type="file" id="donationReceipt" class="form-input" accept="image/*,application/pdf" required style="padding-top: 10px;">
+                                <small style="color: var(--txt3); font-size: 0.8rem; margin-top: 4px; display: block;">Sube la foto o captura de tu transferencia a Bancolombia/Nequi.</small>
+                            </div>
+
+                            <button type="submit" class="btn btn-accent w-full btn-lg">
+                                <i data-lucide="heart" width="18" height="18"></i>
+                                Registrar mi donacion
+                            </button>
+                        </form>
+                    </div>
+
+                    <div>
+                        <div class="bank-info" style="position: relative;">
+                            <h3 style="display: flex; align-items: center; gap: 8px;">
+                                <i data-lucide="landmark" width="20" height="20"></i>
+                                Informacion bancaria
+                                <button id="btnEditBankInfo" class="admin-only hidden" onclick="openEditBankInfoModal()" style="margin-left: auto; background: none; border: none; cursor: pointer; color: var(--p600);"><i data-lucide="pencil" width="18" height="18"></i></button>
+                            </h3>
+                            <div class="bank-detail">
+                                <div>
+                                    <div class="label">Banco</div>
+                                    <div class="value" id="displayBanco">Bancolombia</div>
+                                </div>
+                            </div>
+                            <div class="bank-detail">
+                                <div>
+                                    <div class="label">Tipo de cuenta</div>
+                                    <div class="value" id="displayTipoCuenta">Ahorros</div>
+                                </div>
+                            </div>
+                            <div class="bank-detail">
+                                <div>
+                                    <div class="label">Numero de cuenta</div>
+                                    <div class="value" id="displayNumCuenta">123-456789-00</div>
+                                </div>
+                                <button class="copy-btn" onclick="copyToClipboard(document.getElementById('displayNumCuenta').textContent)">Copiar</button>
+                            </div>
+                            <div class="bank-detail">
+                                <div>
+                                    <div class="label">Titular</div>
+                                    <div class="value" id="displayTitular">Fundacion Esperanza Viva</div>
+                                </div>
+                            </div>
+                            <div class="bank-detail">
+                                <div>
+                                    <div class="label">NIT</div>
+                                    <div class="value" id="displayNIT">900.123.456-7</div>
+                                </div>
+                                <button class="copy-btn" onclick="copyToClipboard(document.getElementById('displayNIT').textContent)">Copiar</button>
+                            </div>
+                            <div class="bank-detail">
+                                <div>
+                                    <div class="label">Nequi / Daviplata</div>
+                                    <div class="value" id="displayNequi">300 123 4567</div>
+                                </div>
+                                <button class="copy-btn" onclick="copyToClipboard(document.getElementById('displayNequi').textContent)">Copiar</button>
+                            </div>
+                        </div>
+
+                        <div class="impact-stats">
+                            <div class="impact-stat">
+                                <div class="icon">&#127890;</div>
+                                <div class="number">200+</div>
+                                <div class="label">Kits escolares</div>
+                            </div>
+                            <div class="impact-stat">
+                                <div class="icon">&#127869;</div>
+                                <div class="number">5,000+</div>
+                                <div class="label">Almuerzos entregados</div>
+                            </div>
+                            <div class="impact-stat">
+                                <div class="icon">&#127973;</div>
+                                <div class="number">300+</div>
+                                <div class="label">Consultas medicas</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- PAGINA: FORO DE COMUNIDAD -->
+            <section class="page-section" id="page-foro">
+                <div style="max-width:800px; margin-bottom:32px;">
+                    <div class="section-overline">
+                        <i data-lucide="message-circle" width="16" height="16"></i>
+                        Comunidad
+                    </div>
+                    <h2 class="section-title">Foro de la comunidad</h2>
+                    <p class="section-subtitle">Comparte tu opinion, haz preguntas y conecta con otras personas que tambien quieren hacer la diferencia.</p>
+                </div>
+
+                <div class="forum-container">
+                    <div class="forum-compose" id="forumCompose">
+                        <div class="forum-compose-top">
+                            <div class="forum-compose-avatar" id="forumAvatar">?</div>
+                            <textarea id="forumTextarea" placeholder="Que quieres compartir con la comunidad?" onclick="requireLogin('comentar en el foro')"></textarea>
+                        </div>
+                        <div class="forum-compose-actions">
+                            <button class="btn btn-accent btn-sm" onclick="submitForumPost()">
+                                <i data-lucide="send" width="14" height="14"></i>
+                                Publicar
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="forum-posts" id="forumPosts">
+                        <div class="skeleton skeleton-card" style="height:120px;"></div>
+                        <div class="skeleton skeleton-card" style="height:120px;"></div>
+                    </div>
+
+                    <div class="empty-state hidden" id="forumEmpty">
+                        <div class="empty-icon">
+                            <i data-lucide="message-circle-off" width="32" height="32"></i>
+                        </div>
+                        <h3>Se el primero en comentar</h3>
+                        <p>Inicia la conversacion compartiendo tus ideas o preguntas con la comunidad.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- PAGINA: ADMIN DASHBOARD -->
+            <section class="page-section" id="page-admin-dashboard">
+                <div class="admin-header">
+                    <h2>&#128202; Panel de Administracion</h2>
+                    <p>Bienvenido al centro de control de la fundacion.</p>
+                </div>
+
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <div class="metric-icon green">
+                            <i data-lucide="eye" width="24" height="24"></i>
+                        </div>
+                        <div class="metric-data">
+                            <div class="metric-value" id="metricVisits">0</div>
+                            <div class="metric-label">Visitas totales</div>
+                            <div class="metric-change up">&#8593; Activo</div>
+                        </div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-icon orange">
+                            <i data-lucide="hand-coins" width="24" height="24"></i>
+                        </div>
+                        <div class="metric-data">
+                            <div class="metric-value" id="metricDonations">$0</div>
+                            <div class="metric-label">Total donaciones</div>
+                            <div class="metric-change up">&#8593; Creciendo</div>
+                        </div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-icon blue">
+                            <i data-lucide="users" width="24" height="24"></i>
+                        </div>
+                        <div class="metric-data">
+                            <div class="metric-value" id="metricDonors">0</div>
+                            <div class="metric-label">Donantes unicos</div>
+                        </div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-icon purple">
+                            <i data-lucide="message-circle" width="24" height="24"></i>
+                        </div>
+                        <div class="metric-data">
+                            <div class="metric-value" id="metricPosts">0</div>
+                            <div class="metric-label">Comentarios foro</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="charts-grid">
+                    <div class="chart-card">
+                        <h3>
+                            <i data-lucide="trending-up" width="18" height="18" style="color:var(--primary-500);"></i>
+                            Donaciones por Mes
+                        </h3>
+                        <div class="chart-wrapper">
+                            <canvas id="donationsChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="chart-card">
+                        <h3>
+                            <i data-lucide="pie-chart" width="18" height="18" style="color:var(--accent-500);"></i>
+                            Metodos de Pago
+                        </h3>
+                        <div class="chart-wrapper">
+                            <canvas id="methodsChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- PAGINA: ADMIN GESTION DE DONANTES -->
+            <section class="page-section" id="page-admin-donantes">
+                <div class="admin-header">
+                    <h2>&#128101; Gestion de Donantes</h2>
+                    <p>Registro completo de todas las donaciones recibidas.</p>
+                </div>
+
+                <div class="data-table-wrapper">
+                    <div class="data-table-header">
+                        <h3>Lista de donaciones</h3>
+                        <button class="btn btn-outline btn-sm" onclick="loadDonorsTable()">
+                            <i data-lucide="refresh-cw" width="14" height="14"></i>
+                            Actualizar
+                        </button>
+                    </div>
+                    <table class="data-table" id="donorsTable">
+                        <thead>
+                            <tr>
+                                <th>Donante</th>
+                                <th>Email</th>
+                                <th>Monto</th>
+                                <th>Metodo</th>
+                                <th>Fecha</th>
+                                <th>Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody id="donorsTableBody">
+                            <tr><td colspan="6" class="text-center" style="padding:40px;color:var(--text-tertiary);">Cargando donaciones...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- PAGINA: ADMIN GESTION DE CONTENIDO -->
+            <section class="page-section" id="page-admin-contenido">
+                <div class="admin-header">
+                    <h2>&#128221; Gestion de Contenido</h2>
+                    <p>Publica nuevas noticias y modera el foro de la comunidad.</p>
+                </div>
+
+                <div class="admin-content-grid">
+                    <div class="admin-form-card">
+                        <h3>
+                            <i data-lucide="image-plus" width="20" height="20" style="color:var(--primary-500);"></i>
+                            Nueva Publicacion
+                        </h3>
+                        <form id="newPostForm" onsubmit="submitNewPost(event)">
+                            <div class="form-group">
+                                <label for="postTitle">Titulo de la publicacion</label>
+                                <input type="text" class="form-input" id="postTitle" placeholder="Ej: Jornada de entrega de kits escolares" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="postDescription">Descripcion</label>
+                                <textarea class="form-input" id="postDescription" placeholder="Describe la actividad realizada..." required></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="postImageFile">Imagenes de la publicacion</label>
+                                <input type="file" class="form-input" id="postImageFile" accept="image/*" multiple onchange="previewPostImage(event)" style="padding-top:10px;">
+                                <div id="postImagePreviewContainer" style="display:none; margin-top:10px; border-radius:8px; overflow:hidden; max-height:300px; border:1px solid var(--border-color); overflow-y:auto; display:grid; grid-template-columns:repeat(auto-fill, minmax(100px, 1fr)); gap:8px; padding:8px;">
+                                    <!-- Las imagenes previas se inyectaran aqui -->
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="postDate">Fecha</label>
+                                <input type="date" class="form-input" id="postDate" required>
+                            </div>
+                            <button type="submit" class="btn btn-accent w-full">
+                                <i data-lucide="upload" width="16" height="16"></i>
+                                Publicar en el Feed
+                            </button>
+                        </form>
+                    </div>
+
+                    <div class="admin-form-card">
+                        <h3>
+                            <i data-lucide="shield-check" width="20" height="20" style="color:var(--accent-500);"></i>
+                            Moderacion del Foro
+                        </h3>
+                        <p style="color:var(--text-secondary);font-size:0.9rem;margin-bottom:20px;">
+                            Los botones de "Eliminar" aparecen junto a cada comentario del foro cuando eres administrador. Tambien puedes gestionar los comentarios desde aqui.
+                        </p>
+                        <div id="adminForumList" style="max-height:400px;overflow-y:auto;">
+                        </div>
+                        <button class="btn btn-outline w-full mt-2" onclick="loadForumPostsAdmin()">
+                            <i data-lucide="refresh-cw" width="14" height="14"></i>
+                            Recargar comentarios
+                        </button>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- MODAL VISOR DE PUBLICACION (CARRUSEL) -->
+    <div id="postViewerModal" class="post-viewer-overlay hidden">
+        <div class="post-viewer-content">
+            <button class="post-viewer-close" onclick="closePostModal()">
+                <i data-lucide="x" width="24" height="24"></i>
+            </button>
+            <div class="post-viewer-layout">
+                <div class="post-viewer-image-container">
+                    <button class="carousel-arrow left" onclick="changeModalImage(-1)" id="carouselPrevBtn">
+                        <i data-lucide="chevron-left" width="24" height="24"></i>
+                    </button>
+                    <img id="postViewerImage" src="" alt="Publicacion">
+                    <button class="carousel-arrow right" onclick="changeModalImage(1)" id="carouselNextBtn">
+                        <i data-lucide="chevron-right" width="24" height="24"></i>
+                    </button>
+                    <div class="carousel-indicators" id="carouselIndicators"></div>
+                </div>
+                <div class="post-viewer-details">
+                    <div class="post-viewer-header">
+                        <h2 id="postViewerTitle">Titulo</h2>
+                        <span id="postViewerDate" class="post-viewer-date">Fecha</span>
+                    </div>
+                    <div class="post-viewer-body">
+                        <p id="postViewerDescription">Descripcion completa...</p>
+                    </div>
+                    <div class="post-viewer-footer">
+                        <button class="btn btn-outline w-full" id="sharePostBtn">
+                            <i data-lucide="share-2" width="16" height="16"></i>
+                            Compartir publicacion
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL EDITAR PUBLICACION (ADMIN) -->
+    <div id="editPostModal" class="post-viewer-overlay hidden" style="z-index: 10000;">
+        <div class="post-viewer-content" style="max-height: 85vh; max-width: 600px; padding: 32px; background: var(--bg1); display: block; overflow-y: auto;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                <h2 style="font-size: 1.5rem; color: var(--txt1); margin: 0;">Editar Publicación</h2>
+                <button onclick="closeEditModal()" style="background: var(--bg2); border: none; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--txt2);">
+                    <i data-lucide="x" width="20" height="20"></i>
+                </button>
+            </div>
+            <form id="editPostForm" onsubmit="saveEditPost(event)">
+                <input type="hidden" id="editPostIndex">
+                <input type="hidden" id="editPostImageUrl">
+                <div class="form-group" style="margin-bottom: 16px;">
+                    <label style="display: block; font-weight: 600; margin-bottom: 8px; color: var(--txt2);">Título</label>
+                    <input type="text" id="editPostTitle" class="form-input" required>
+                </div>
+                <div class="form-group" style="margin-bottom: 16px;">
+                    <label style="display: block; font-weight: 600; margin-bottom: 8px; color: var(--txt2);">Descripción</label>
+                    <textarea id="editPostDescription" class="form-input" style="min-height: 120px;" required></textarea>
+                </div>
+                <div class="form-group" style="margin-bottom: 24px;">
+                    <label style="display: block; font-weight: 600; margin-bottom: 8px; color: var(--txt2);">Fecha</label>
+                    <input type="date" id="editPostDate" class="form-input" required>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center;">
+                    <i data-lucide="save"></i> Guardar Cambios
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL CONFIRMACION ELIMINAR -->
+    <div id="deleteConfirmModal" class="post-viewer-overlay hidden" style="z-index: 10001; align-items: center; justify-content: center; display: flex;">
+        <div class="delete-modal-content" style="background: var(--bg1); border-radius: var(--r4); padding: 40px 32px; width: 90%; max-width: 450px; text-align: center; box-shadow: var(--sh4);">
+            
+            <!-- ESTADO 1: Confirmacion -->
+            <div id="deleteStateConfirm">
+                <div class="delete-icon warning">
+                    <i data-lucide="alert-circle" width="48" height="48"></i>
+                </div>
+                <h2 id="deleteConfirmTitle" style="color: var(--txt1); font-size: 1.5rem; margin-bottom: 8px;">¿Eliminar Publicación?</h2>
+                <p style="color: var(--txt2); margin-bottom: 24px;">Esta acción no se puede deshacer.</p>
+                <div style="display: flex; gap: 12px; justify-content: center;">
+                    <button id="btnConfirmDelete" class="btn" style="background: #ef4444; color: white;">Sí, eliminar</button>
+                    <button onclick="closeDeleteModal()" class="btn" style="background: var(--txt3); color: white;">Cancelar</button>
+                </div>
+            </div>
+
+            <!-- ESTADO 2: Cargando -->
+            <div id="deleteStateLoading" class="hidden">
+                <div class="delete-icon loading">
+                    <i data-lucide="loader-2" class="spin-anim" width="48" height="48"></i>
+                </div>
+                <h2 style="color: var(--txt1); font-size: 1.5rem; margin-top: 16px;">Eliminando...</h2>
+                <p style="color: var(--txt2);">Por favor espera un momento.</p>
+            </div>
+
+            <!-- ESTADO 3: Exito -->
+            <div id="deleteStateSuccess" class="hidden">
+                <div class="delete-icon success">
+                    <i data-lucide="check-circle-2" width="48" height="48"></i>
+                </div>
+                <h2 style="color: var(--txt1); font-size: 1.5rem; margin-top: 16px; margin-bottom: 8px;">¡Eliminado!</h2>
+                <p id="deleteSuccessDesc" style="color: var(--txt2); margin-bottom: 24px;">La publicación se eliminó correctamente.</p>
+                <button onclick="closeDeleteModal()" class="btn btn-primary" style="width: 100%; justify-content: center;">Aceptar</button>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- MODAL COMPARTIR (MENU TIPO REDES SOCIALES) -->
+    <div id="shareMenuModal" class="post-viewer-overlay share-overlay hidden" style="z-index: 10002; justify-content: center; display: flex;">
+        <div class="share-modal-content" style="background: var(--bg1); width: 100%; max-width: 500px; padding: 32px 24px; position: relative; box-shadow: var(--sh4);">
+            <div class="share-drag-handle" style="width: 40px; height: 5px; background: var(--b2); border-radius: 10px; margin: 0 auto 24px auto;"></div>
+            <h3 style="text-align: center; font-size: 1.3rem; margin-bottom: 24px; color: var(--txt1);">Compartir en...</h3>
+            
+            <div class="share-options-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 16px; justify-items: center;">
+                <button class="share-option-btn" onclick="shareTo('whatsapp')" style="background: none; border: none; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 8px; transition: transform 0.2s;">
+                    <div class="share-icon" style="width: 56px; height: 56px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: var(--sh1); background: #25D366; color: white;">
+                        <svg viewBox="0 0 24 24" width="28" height="28" stroke="none" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+                    </div>
+                    <span style="font-size: 0.85rem; color: var(--txt2); font-weight: 500;">WhatsApp</span>
+                </button>
+                <button class="share-option-btn" onclick="shareTo('facebook')" style="background: none; border: none; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 8px; transition: transform 0.2s;">
+                    <div class="share-icon" style="width: 56px; height: 56px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: var(--sh1); background: #1877F2; color: white;">
+                        <svg viewBox="0 0 24 24" width="28" height="28" stroke="none" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.469h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.469h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                    </div>
+                    <span style="font-size: 0.85rem; color: var(--txt2); font-weight: 500;">Facebook</span>
+                </button>
+                <button class="share-option-btn" onclick="shareTo('instagram')" style="background: none; border: none; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 8px; transition: transform 0.2s;">
+                    <div class="share-icon" style="width: 56px; height: 56px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: var(--sh1); background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%); color: white;">
+                        <svg viewBox="0 0 24 24" width="26" height="26" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
+                    </div>
+                    <span style="font-size: 0.85rem; color: var(--txt2); font-weight: 500;">Instagram</span>
+                </button>
+                <button class="share-option-btn" onclick="shareTo('twitter')" style="background: none; border: none; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 8px; transition: transform 0.2s;">
+                    <div class="share-icon" style="width: 56px; height: 56px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: var(--sh1); background: #000000; color: white;">
+                        <svg viewBox="0 0 24 24" width="22" height="22" stroke="none" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                    </div>
+                    <span style="font-size: 0.85rem; color: var(--txt2); font-weight: 500;">X</span>
+                </button>
+                <button class="share-option-btn" onclick="shareTo('email')" style="background: none; border: none; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 8px; transition: transform 0.2s;">
+                    <div class="share-icon" style="width: 56px; height: 56px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: var(--sh1); background: #ea4335; color: white;"><i data-lucide="mail"></i></div>
+                    <span style="font-size: 0.85rem; color: var(--txt2); font-weight: 500;">Correo</span>
+                </button>
+                <button class="share-option-btn" onclick="shareTo('copy')" style="background: none; border: none; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 8px; transition: transform 0.2s;">
+                    <div class="share-icon" style="width: 56px; height: 56px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: var(--sh1); background: var(--txt3); color: white;"><i data-lucide="link"></i></div>
+                    <span style="font-size: 0.85rem; color: var(--txt2); font-weight: 500;">Copiar Link</span>
+                </button>
+                <button id="btnNativeShare" class="share-option-btn" onclick="shareTo('native')" style="background: none; border: none; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 8px; transition: transform 0.2s;">
+                    <div class="share-icon" style="width: 56px; height: 56px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: var(--sh1); background: var(--p600); color: white;"><i data-lucide="share-2"></i></div>
+                    <span style="font-size: 0.85rem; color: var(--txt2); font-weight: 500;">Más opciones</span>
+                </button>
+            </div>
+
+            <button onclick="closeShareMenu()" class="btn" style="width: 100%; margin-top: 24px; background: var(--bg2); color: var(--txt2); justify-content: center;">Cancelar</button>
+        </div>
+    </div>
+
+    <!-- MODAL EDITAR DONACION (ADMIN) -->
+    <div id="editDonationModal" class="post-viewer-overlay hidden" style="z-index: 10001; align-items: center; justify-content: center; display: flex; backdrop-filter: blur(8px);">
+        <div class="modal-content" style="background: var(--bg1); width: 90%; max-width: 420px; border-radius: 24px; padding: 32px; position: relative; box-shadow: 0 20px 40px rgba(0,0,0,0.2); animation: slideUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);">
+            <button onclick="closeEditDonationModal()" class="close-modal-btn" style="position: absolute; top: 20px; right: 20px; width: 36px; height: 36px; border-radius: 50%; background: var(--bg2); border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--txt2); transition: all 0.2s;"><i data-lucide="x" style="width: 18px; height: 18px;"></i></button>
+            
+            <div style="text-align: center; margin-bottom: 24px;">
+                <div style="width: 56px; height: 56px; border-radius: 50%; background: var(--p100); color: var(--p600); display: flex; align-items: center; justify-content: center; margin: 0 auto 16px auto;">
+                    <i data-lucide="settings-2" style="width: 28px; height: 28px;"></i>
+                </div>
+                <h3 style="font-size: 1.4rem; color: var(--txt1); margin: 0; font-weight: 700;">Gestionar Donación</h3>
+                <p style="color: var(--txt2); font-size: 0.9rem; margin-top: 8px;">Actualiza el estado de la transacción</p>
+            </div>
+            
+            <div style="background: var(--bg2); border-radius: 16px; padding: 16px; margin-bottom: 24px; display: flex; flex-direction: column; gap: 12px; border: 1px solid var(--b2);">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-size: 0.85rem; color: var(--txt3); font-weight: 500;">Donante</span>
+                    <span id="editDonationName" style="font-size: 0.95rem; color: var(--txt1); font-weight: 600;"></span>
+                </div>
+                <div style="height: 1px; background: var(--b2); width: 100%;"></div>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-size: 0.85rem; color: var(--txt3); font-weight: 500;">Monto</span>
+                    <span id="editDonationAmount" style="font-size: 1.1rem; color: var(--p600); font-weight: 700;"></span>
+                </div>
+            </div>
+
+            <div style="margin-bottom: 32px;">
+                <label style="display: block; font-size: 0.9rem; font-weight: 600; color: var(--txt1); margin-bottom: 12px;">Estado Actual</label>
+                <div style="position: relative;">
+                    <select id="editDonationStatus" style="width: 100%; appearance: none; background: var(--bg1); border: 2px solid var(--b2); border-radius: 12px; padding: 14px 16px; font-size: 1rem; color: var(--txt1); font-weight: 600; cursor: pointer; outline: none; transition: border-color 0.2s;">
+                        <option value="Pendiente">⏳ Pendiente</option>
+                        <option value="Confirmada">✅ Confirmada</option>
+                        <option value="En revisión">🔍 En revisión</option>
+                        <option value="Cancelada">❌ Cancelada</option>
+                    </select>
+                    <i data-lucide="chevron-down" style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); pointer-events: none; color: var(--txt2);"></i>
+                </div>
+            </div>
+
+            <button id="btnSaveDonation" onclick="saveDonationStatus()" class="btn btn-primary" style="width: 100%; justify-content: center; padding: 14px; font-size: 1rem; border-radius: 12px; transition: transform 0.2s, box-shadow 0.2s;">
+                <i data-lucide="save"></i> Guardar Cambios
+            </button>
+        </div>
+    </div>
+
+    <!-- MODAL EDITAR INFORMACION BANCARIA (ADMIN) -->
+    <div id="editBankInfoModal" class="post-viewer-overlay hidden" style="z-index: 10001; align-items: center; justify-content: center; display: flex; backdrop-filter: blur(8px);">
+        <div class="modal-content" style="background: var(--bg1); width: 90%; max-width: 420px; border-radius: 24px; padding: 32px; position: relative; box-shadow: 0 20px 40px rgba(0,0,0,0.2); animation: slideUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);">
+            <button onclick="closeEditBankInfoModal()" class="close-modal-btn" style="position: absolute; top: 20px; right: 20px; width: 36px; height: 36px; border-radius: 50%; background: var(--bg2); border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--txt2); transition: all 0.2s;"><i data-lucide="x" style="width: 18px; height: 18px;"></i></button>
+            
+            <div style="text-align: center; margin-bottom: 24px;">
+                <h3 style="font-size: 1.4rem; color: var(--txt1); margin: 0; font-weight: 700;">Editar Banco</h3>
+            </div>
+            
+            <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px;">
+                <div>
+                    <label style="font-size: 0.85rem; font-weight: 600; color: var(--txt2);">Banco</label>
+                    <input type="text" id="editBanco" class="input-field">
+                </div>
+                <div>
+                    <label style="font-size: 0.85rem; font-weight: 600; color: var(--txt2);">Tipo de cuenta</label>
+                    <input type="text" id="editTipoCuenta" class="input-field">
+                </div>
+                <div>
+                    <label style="font-size: 0.85rem; font-weight: 600; color: var(--txt2);">Número de cuenta</label>
+                    <input type="text" id="editNumCuenta" class="input-field">
+                </div>
+                <div>
+                    <label style="font-size: 0.85rem; font-weight: 600; color: var(--txt2);">Titular</label>
+                    <input type="text" id="editTitular" class="input-field">
+                </div>
+                <div>
+                    <label style="font-size: 0.85rem; font-weight: 600; color: var(--txt2);">NIT</label>
+                    <input type="text" id="editNIT" class="input-field">
+                </div>
+                <div>
+                    <label style="font-size: 0.85rem; font-weight: 600; color: var(--txt2);">Nequi / Daviplata</label>
+                    <input type="text" id="editNequi" class="input-field">
+                </div>
+            </div>
+
+            <button id="btnSaveBankInfo" onclick="saveBankInfo()" class="btn btn-primary" style="width: 100%; justify-content: center; padding: 14px; font-size: 1rem; border-radius: 12px;">
+                <i data-lucide="save"></i> Guardar Cambios
+            </button>
+        </div>
+    </div>
+
+    <!-- Logica de la aplicacion -->
+    <script src="app.js"></script>
+</body>
+</html>
