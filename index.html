@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Fundacion dedicada a transformar vidas y construir un futuro mejor para comunidades vulnerables. Unete a nuestra causa.">
     <meta name="keywords" content="fundacion, ONG, donaciones, voluntariado, comunidad, ayuda social">
-    <meta name="author" content="Fundacion Esperanza Viva">
-    <title>Fundacion Esperanza Viva - Transformando Vidas</title>
+    <meta name="author" content="Fundación GAP">
+    <title>Fundación GAP - Transformando Vidas</title>
 
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -16,6 +16,11 @@
     <!-- Chart.js para graficos del panel admin -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
+    <!-- Librerías de Exportación -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
     <!-- Google Identity Services (Sign In With Google) -->
     <script src="https://accounts.google.com/gsi/client" async defer onload="initGoogleSignIn()"></script>
 
@@ -23,23 +28,30 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
 
+    <!-- Wompi Widget -->
+    <script type="text/javascript" src="https://checkout.wompi.co/widget.js"></script>
+
     <!-- MSAL.js para autenticacion con Outlook/Microsoft -->
     <script src="https://alcdn.msauth.net/browser/2.38.0/js/msal-browser.min.js"></script>
 
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
 
-    <!-- Estilos locales -->
-    <link rel="stylesheet" href="style.css">
+    <!-- Estilos Globales -->
+    <link rel="stylesheet" href="style.css?v=24">
 </head>
 <body>
     <!-- PAGE LOADER -->
     <div id="page-loader">
         <div class="loader-orb loader-orb-1"></div>
         <div class="loader-orb loader-orb-2"></div>
-        <div class="loader-icon-wrap">&#127807;</div>
-        <div class="loader-brand">Fundación GAP</div>
-        <div class="loader-tagline">Transformando vidas</div>
+        <div class="loader-icon-wrap" style="background: transparent; box-shadow: none; border: none; width: auto; height: auto;">
+            <div style="width: 140px; height: 100px; overflow: hidden; border-radius: 12px; background: #fff; margin: 0 auto; display: flex; justify-content: center;">
+                <img src="Logo Fundacion GAP.jpeg" alt="Fundación GAP" style="width: 140px; height: auto;">
+            </div>
+        </div>
+        <div class="loader-brand" style="margin-top: 16px;">Fundación GAP</div>
+        <div class="loader-tagline" style="max-width: 280px; text-align: center; line-height: 1.4; margin-top: 8px;">Grupo de Apoyo para Proyectos<br>Impulsamos sueños, protegemos derechos</div>
         <div class="loader-track"><div class="loader-fill"></div></div>
         <div class="loader-dots">
             <div class="loader-dot"></div>
@@ -61,109 +73,81 @@
                 <i data-lucide="x" width="18" height="18"></i>
             </button>
 
-            <div style="text-align:center; margin-bottom: 6px;">
-                <div style="width:48px;height:48px;background:var(--gradient-primary);border-radius:var(--radius-md);display:inline-flex;align-items:center;justify-content:center;font-size:1.3rem;margin-bottom:8px;">&#127793;</div>
+            <div id="authHeaderLogin">
+                <div style="display:flex; align-items:center; gap: 8px; margin-bottom: 8px;">
+                    <div style="width: 24px; height: 2px; background: var(--primary-500);"></div>
+                    <span style="color: var(--primary-500); font-weight: 700; font-size: 0.85rem; letter-spacing: 2px;">ACCESO</span>
+                </div>
+                <h2 style="font-size: 2rem; font-weight: 900; color: var(--txt1); text-transform: uppercase; margin-bottom: 8px;">INICIAR SESIÓN</h2>
+                <p style="color: var(--txt2); font-size: 0.95rem; margin-bottom: 24px;">Entra con tu correo para acceder a la plataforma.</p>
             </div>
 
-            <h2>Bienvenido</h2>
-            <p class="modal-subtitle">Inicia sesion para ser parte del cambio</p>
+            <div id="authHeaderRegister" style="display:none;">
+                <div style="display:flex; align-items:center; gap: 8px; margin-bottom: 8px;">
+                    <div style="width: 24px; height: 2px; background: var(--primary-500);"></div>
+                    <span style="color: var(--primary-500); font-weight: 700; font-size: 0.85rem; letter-spacing: 2px;">REGISTRO</span>
+                </div>
+                <h2 style="font-size: 2rem; font-weight: 900; color: var(--txt1); text-transform: uppercase; margin-bottom: 8px;">CREAR CUENTA</h2>
+                <p style="color: var(--txt2); font-size: 0.95rem; margin-bottom: 24px;">Regístrate para ser parte del cambio.</p>
+            </div>
 
-            <div class="social-login-btns">
-                <button class="social-btn google" id="btnGoogleLogin" onclick="loginWithGoogle()">
-                    <svg viewBox="0 0 24 24" width="20" height="20">
+            <button class="social-btn google" id="btnGoogleLogin" onclick="loginWithGoogle()" style="width: 100%; border-radius: 50px; background: var(--primary-500); color: white; border: none; padding: 12px 24px; display:flex; align-items:center; justify-content: space-between; font-weight: 600; font-size: 1rem; margin-bottom: 24px;">
+                <span style="flex:1; text-align: left;">Continuar con Google</span>
+                <div style="background: white; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;">
+                    <svg viewBox="0 0 24 24" width="18" height="18">
                         <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/>
                         <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
                         <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
                         <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
                     </svg>
-                    Continuar con Google
-                </button>
-
-                <button class="social-btn microsoft" id="btnMicrosoftLogin" onclick="loginWithMicrosoft()">
-                    <svg viewBox="0 0 24 24" width="20" height="20">
-                        <rect fill="#F25022" x="1" y="1" width="10" height="10"/>
-                        <rect fill="#7FBA00" x="13" y="1" width="10" height="10"/>
-                        <rect fill="#00A4EF" x="1" y="13" width="10" height="10"/>
-                        <rect fill="#FFB900" x="13" y="13" width="10" height="10"/>
-                    </svg>
-                    Continuar con Outlook
-                </button>
-            </div>
-
-            <div class="divider"><span>o con tu telefono</span></div>
-
-            <div class="phone-login-form">
-                <div class="form-group">
-                    <label for="phoneNumber">Numero de telefono</label>
-                    <div class="phone-input-group">
-                        <input type="text" class="form-input country-code" value="+57" id="countryCode" placeholder="+57">
-                        <input type="tel" class="form-input" id="phoneNumber" placeholder="300 123 4567">
-                    </div>
                 </div>
+            </button>
 
-                <div id="recaptcha-container"></div>
-
-                <button class="btn btn-accent w-full" id="btnPhoneLogin" onclick="loginWithPhone()" style="margin-top: 8px;">
-                    <i data-lucide="smartphone" width="18" height="18"></i>
-                    Enviar codigo de verificacion
-                </button>
-
-                <div id="otpSection" class="hidden mt-2">
-                    <div class="form-group">
-                        <label for="otpCode">Codigo de verificacion</label>
-                        <input type="text" class="form-input" id="otpCode" placeholder="123456" maxlength="6">
-                    </div>
-                    <button class="btn btn-accent w-full" onclick="verifyOtp()">
-                        Verificar codigo
-                    </button>
-                </div>
+            <div class="divider" style="margin: 24px 0;">
+                <span style="color: var(--txt3); font-size: 0.85rem; font-weight: 600; letter-spacing: 1px; text-transform: uppercase;">O CON TU CORREO</span>
             </div>
-
-            <div class="divider"><span>o con correo y contraseña</span></div>
 
             <!-- FORMULARIO DE INICIO DE SESION -->
             <div id="loginFormSection" class="credentials-login-form">
                 <div class="form-group">
-                    <label for="usernameInput">Correo electrónico</label>
-                    <input type="email" class="form-input" id="usernameInput" placeholder="admin@fundacion.org">
+                    <label for="usernameInput" style="font-weight: 700; color: var(--txt2); font-size: 0.85rem; letter-spacing: 1px; text-transform: uppercase;">CORREO</label>
+                    <input type="email" class="form-input" id="usernameInput" placeholder="tucorreo@ejemplo.com" style="background: transparent; border: 1px solid var(--border1); border-radius: 12px; padding: 14px; color: var(--txt1); font-size: 1rem;">
                 </div>
-                <div class="form-group" style="margin-top: 12px;">
-                    <label for="passwordInput">Contraseña</label>
-                    <input type="password" class="form-input" id="passwordInput" placeholder="Contraseña">
+                <div class="form-group" style="margin-top: 16px;">
+                    <label for="passwordInput" style="font-weight: 700; color: var(--txt2); font-size: 0.85rem; letter-spacing: 1px; text-transform: uppercase;">CONTRASEÑA</label>
+                    <input type="password" class="form-input" id="passwordInput" placeholder="••••••••" style="background: transparent; border: 1px solid var(--border1); border-radius: 12px; padding: 14px; color: var(--txt1); font-size: 1rem;">
                 </div>
-                <button class="btn btn-accent w-full" onclick="loginWithCredentials()" style="margin-top: 16px;">
-                    <i data-lucide="key" width="18" height="18"></i>
-                    Iniciar sesión
+                <button class="btn w-full" onclick="loginWithCredentials()" style="margin-top: 24px; background: var(--primary-500); color: white; border-radius: 50px; padding: 16px; font-weight: 800; font-size: 1.1rem; box-shadow: 0 4px 14px var(--primary-300); border: none;">
+                    Entrar
                 </button>
-                <p style="text-align:center;margin-top:14px;font-size:0.85rem;color:var(--text-secondary);">
-                    ¿No tienes cuenta? <a href="#" onclick="toggleAuthForm('register'); return false;" style="color:var(--primary-600);font-weight:600;">Crear cuenta</a>
+                <p style="text-align:center;margin-top:24px;font-size:0.95rem;color: var(--txt2);">
+                    ¿No tienes cuenta? <a href="#" onclick="toggleAuthForm('register'); document.getElementById('authHeaderLogin').style.display='none'; document.getElementById('authHeaderRegister').style.display='block'; return false;" style="color: var(--primary-500); font-weight: 800;">Crear cuenta</a>
                 </p>
             </div>
 
             <!-- FORMULARIO DE REGISTRO -->
             <div id="registerFormSection" class="credentials-login-form" style="display:none;">
                 <div class="form-group">
-                    <label for="registerName">Nombre completo</label>
-                    <input type="text" class="form-input" id="registerName" placeholder="Tu nombre completo">
+                    <label for="registerName" style="font-weight: 700; color: var(--txt2); font-size: 0.85rem; letter-spacing: 1px; text-transform: uppercase;">NOMBRE</label>
+                    <input type="text" class="form-input" id="registerName" placeholder="Tu nombre" style="background: transparent; border: 1px solid var(--border1); border-radius: 12px; padding: 14px; color: var(--txt1); font-size: 1rem;">
                 </div>
-                <div class="form-group" style="margin-top: 12px;">
-                    <label for="registerEmail">Correo electrónico</label>
-                    <input type="email" class="form-input" id="registerEmail" placeholder="tucorreo@ejemplo.com">
+                <div class="form-group" style="margin-top: 16px;">
+                    <label for="registerEmail" style="font-weight: 700; color: var(--txt2); font-size: 0.85rem; letter-spacing: 1px; text-transform: uppercase;">CORREO ELECTRÓNICO</label>
+                    <input type="email" class="form-input" id="registerEmail" placeholder="tucorreo@ejemplo.com" style="background: transparent; border: 1px solid var(--border1); border-radius: 12px; padding: 14px; color: var(--txt1); font-size: 1rem;">
                 </div>
-                <div class="form-group" style="margin-top: 12px;">
-                    <label for="registerPassword">Contraseña</label>
-                    <input type="password" class="form-input" id="registerPassword" placeholder="Mínimo 6 caracteres">
+                <div class="form-group" style="margin-top: 16px;">
+                    <label for="registerPassword" style="font-weight: 700; color: var(--txt2); font-size: 0.85rem; letter-spacing: 1px; text-transform: uppercase;">CONTRASEÑA</label>
+                    <input type="password" class="form-input" id="registerPassword" placeholder="mínimo 8 caracteres, 1 número" style="background: transparent; border: 1px solid var(--border1); border-radius: 12px; padding: 14px; color: var(--txt1); font-size: 1rem;">
                 </div>
-                <div class="form-group" style="margin-top: 12px;">
-                    <label for="registerPasswordConfirm">Confirmar contraseña</label>
-                    <input type="password" class="form-input" id="registerPasswordConfirm" placeholder="Repite tu contraseña">
+                <div class="form-group" style="margin-top: 16px;">
+                    <label for="registerPasswordConfirm" style="font-weight: 700; color: var(--txt2); font-size: 0.85rem; letter-spacing: 1px; text-transform: uppercase;">REPETIR CONTRASEÑA</label>
+                    <input type="password" class="form-input" id="registerPasswordConfirm" placeholder="repite la contraseña" style="background: transparent; border: 1px solid var(--border1); border-radius: 12px; padding: 14px; color: var(--txt1); font-size: 1rem;">
                 </div>
-                <button class="btn btn-accent w-full" onclick="registerWithCredentials()" style="margin-top: 16px;">
-                    <i data-lucide="user-plus" width="18" height="18"></i>
-                    Crear mi cuenta
+                <button class="btn w-full" onclick="registerWithCredentials()" style="margin-top: 24px; background: var(--primary-500); color: white; border-radius: 50px; padding: 16px; font-weight: 800; font-size: 1.1rem; box-shadow: 0 4px 14px var(--primary-300); border: none;">
+                    Crear cuenta
                 </button>
-                <p style="text-align:center;margin-top:14px;font-size:0.85rem;color:var(--text-secondary);">
-                    ¿Ya tienes cuenta? <a href="#" onclick="toggleAuthForm('login'); return false;" style="color:var(--primary-600);font-weight:600;">Iniciar sesión</a>
+                <p style="text-align:center;margin-top:24px;font-size:0.95rem;color: var(--txt2);">
+                    ¿Ya tienes cuenta? <a href="#" onclick="toggleAuthForm('login'); document.getElementById('authHeaderRegister').style.display='none'; document.getElementById('authHeaderLogin').style.display='block'; return false;" style="color: var(--primary-500); font-weight: 800;">Iniciar sesión</a>
                 </p>
             </div>
         </div>
@@ -174,11 +158,13 @@
         <!-- SIDEBAR -->
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
-                <div class="sidebar-logo">
-                    <div class="sidebar-logo-icon">&#127793;</div>
-                    <div class="sidebar-logo-text">
-                        <h2>Esperanza Viva</h2>
-                        <span>Fundacion</span>
+                <div class="sidebar-logo" style="padding: 16px; justify-content: center; width: 100%; display: flex; flex-direction: column; align-items: center; text-align: center;">
+                    <div style="width: 96px; height: 70px; overflow: hidden; border-radius: 8px; background: #fff; box-shadow: var(--sh1); display: flex; justify-content: center;">
+                        <img src="Logo Fundacion GAP.jpeg" alt="Fundación GAP Logo" style="width: 96px; height: auto;">
+                    </div>
+                    <div style="margin-top: 14px;">
+                        <span style="display: block; font-size: 0.85rem; font-weight: 700; color: #fff; line-height: 1.2;">Grupo de Apoyo para Proyectos</span>
+                        <span style="display: block; font-size: 0.65rem; color: rgba(255,255,255,0.75); margin-top: 6px; line-height: 1.3;">Impulsamos sueños, protegemos derechos</span>
                     </div>
                 </div>
             </div>
@@ -201,10 +187,24 @@
                     <i data-lucide="hand-coins" width="20" height="20"></i>
                     Donaciones
                 </a>
+                <a class="nav-item" data-page="voluntariado" onclick="navigateTo('voluntariado')">
+                    <i data-lucide="users-2" width="20" height="20"></i>
+                    Voluntariado
+                </a>
                 <a class="nav-item" data-page="foro" onclick="navigateTo('foro')">
                     <i data-lucide="message-circle" width="20" height="20"></i>
                     Comunidad
                     <span class="nav-badge" id="forumBadge" style="display:none;">0</span>
+                </a>
+                
+                <p class="nav-section-title logged-in-only">Mi Panel</p>
+                <a class="nav-item logged-in-only" data-page="mi-cuenta" onclick="navigateTo('mi-cuenta')">
+                    <i data-lucide="user-circle" width="20" height="20"></i>
+                    Mi Cuenta
+                </a>
+                <a class="nav-item voluntario-only" data-page="actividades" onclick="navigateTo('actividades')">
+                    <i data-lucide="calendar-check" width="20" height="20"></i>
+                    Actividades de Voluntariado
                 </a>
 
                 <p class="nav-section-title admin-only">Administracion</p>
@@ -220,7 +220,22 @@
                     <i data-lucide="file-plus" width="20" height="20"></i>
                     Gestion Contenido
                 </a>
+                <a class="nav-item admin-only" data-page="admin-voluntarios" onclick="navigateTo('admin-voluntarios')">
+                    <i data-lucide="clipboard-list" width="20" height="20"></i>
+                    Gestion Voluntarios
+                </a>
+                <a class="nav-item admin-only" data-page="admin-usuarios" onclick="navigateTo('admin-usuarios')">
+                    <i data-lucide="users" width="20" height="20"></i>
+                    Gestion Usuarios
+                </a>
             </nav>
+
+            <div style="padding: 0 16px 16px 16px; margin-top: auto;">
+                <a class="nav-item" onclick="openHelpModal()" style="background: rgba(255,255,255,0.05); color: #FFF; justify-content: center; border: 1px solid rgba(255,255,255,0.1);">
+                    <i data-lucide="life-buoy" width="18" height="18"></i>
+                    Centro de Ayuda
+                </a>
+            </div>
 
             <div class="sidebar-user" id="sidebarUser">
                 <div id="sidebarLoginPrompt">
@@ -254,13 +269,27 @@
                     </button>
                     <h1 class="page-title" id="pageTitle">Inicio</h1>
                 </div>
-                <div class="top-bar-right">
+                <div class="top-bar-right" style="display: flex; gap: 16px; align-items: center;">
                     <div id="topBarLoginBtn">
                         <button class="btn-login-topbar" onclick="openLoginModal()">
                             <i data-lucide="log-in" width="16" height="16"></i>
                             Ingresar
                         </button>
                     </div>
+                    
+                    <div id="topBarNotificationsBtn" class="logged-in-only" style="position: relative; cursor: pointer; color: var(--txt2);" onclick="toggleNotifications()">
+                        <i data-lucide="bell" width="22" height="22"></i>
+                        <span id="notificationBadge" style="position: absolute; top: -5px; right: -5px; background: var(--p500); color: white; font-size: 10px; font-weight: bold; padding: 2px 5px; border-radius: 10px; display: none;">0</span>
+                        
+                        <!-- Panel de notificaciones flotante -->
+                        <div id="notificationsPanel" class="hidden" style="position: absolute; right: 0; top: 35px; width: 300px; background: white; border: 1px solid var(--border); border-radius: 8px; box-shadow: var(--sh2); z-index: 100;">
+                            <div style="padding: 12px; border-bottom: 1px solid var(--border); font-weight: bold; color: var(--txt1);">Notificaciones</div>
+                            <div id="notificationsList" style="max-height: 300px; overflow-y: auto;">
+                                <div style="padding: 16px; text-align: center; color: var(--txt3); font-size: 0.9rem;">No hay notificaciones</div>
+                            </div>
+                        </div>
+                    </div>
+
                     <div id="topBarUserAvatar" class="hidden">
                         <div class="user-avatar" id="userAvatarTop" style="cursor:pointer;" onclick="toggleSidebar()">?</div>
                     </div>
@@ -303,6 +332,24 @@
                                 <span class="label">Voluntarios activos</span>
                             </div>
                         </div>
+
+                        <!-- CROWDFUNDING PROGRESS BAR -->
+                        <div class="crowdfund-card reveal" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 24px; margin-top: 32px; backdrop-filter: blur(10px); text-align: left;">
+                            <h4 style="color: #FFF; font-size: 1.1rem; font-weight: 600; margin-bottom: 4px; display: flex; align-items: center; gap: 8px;">
+                                <i data-lucide="target" width="18" height="18" style="color: var(--p300);"></i>
+                                Meta Actual: Comedor Infantil Comunitario
+                            </h4>
+                            <p style="color: rgba(255,255,255,0.8); font-size: 0.9rem; margin-bottom: 16px;">Ayúdanos a alcanzar la meta de $5.000.000 COP para construir el nuevo techo del comedor.</p>
+                            
+                            <div style="background: rgba(255,255,255,0.1); border-radius: 99px; height: 12px; width: 100%; overflow: hidden; margin-bottom: 8px;">
+                                <div id="crowdfundProgress" style="background: linear-gradient(90deg, var(--p400), var(--p600)); height: 100%; width: 0%; border-radius: 99px; transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1);"></div>
+                            </div>
+                            
+                            <div style="display: flex; justify-content: space-between; font-size: 0.85rem; color: rgba(255,255,255,0.9);">
+                                <span>Recaudado: <b id="crowdfundAmount">$0</b></span>
+                                <span>Meta: <b>$5.000.000</b></span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -324,7 +371,7 @@
                             <i data-lucide="sprout" width="28" height="28"></i>
                         </div>
                         <h3>Nuestro Origen</h3>
-                        <p>Fundacion Esperanza Viva nacio en 2018 de un grupo de voluntarios que veian la necesidad urgente de apoyar a comunidades vulnerables. Lo que comenzo como pequenas jornadas de ayuda, crecio hasta convertirse en un movimiento transformador que hoy impacta cientos de vidas.</p>
+                        <p>Fundación GAP nació en 2018 de un grupo de voluntarios que veían la necesidad urgente de apoyar a comunidades vulnerables. Lo que comenzó como pequeñas jornadas de ayuda, creció hasta convertirse en un movimiento transformador que hoy impacta cientos de vidas.</p>
                     </div>
                     <div class="about-card reveal reveal-delay-2">
                         <div class="about-card-icon">
@@ -427,53 +474,36 @@
                         <h3>&#128154; Realizar una donacion</h3>
                         <p class="subtitle">Completa el formulario para registrar tu aporte</p>
 
-                        <form id="donationForm" onsubmit="submitDonation(event)">
+                        <form id="donationFormOnline" onsubmit="submitDonationOnline(event)">
                             <div class="form-group">
-                                <label for="donorName">Tu nombre completo</label>
-                                <input type="text" class="form-input" id="donorName" placeholder="Ingresa tu nombre" required>
+                                <label for="donorNameOnline">Tu nombre completo</label>
+                                <input type="text" class="form-input" id="donorNameOnline" placeholder="Ingresa tu nombre" required>
                             </div>
 
                             <div class="form-group">
-                                <label for="donorEmail">Correo electronico</label>
-                                <input type="email" class="form-input" id="donorEmail" placeholder="correo@ejemplo.com" required>
+                                <label for="donorEmailOnline">Correo electronico</label>
+                                <input type="email" class="form-input" id="donorEmailOnline" placeholder="correo@ejemplo.com" required>
                             </div>
 
                             <div class="form-group">
                                 <label>Selecciona un monto</label>
                                 <div class="amount-options">
-                                    <div class="amount-option" onclick="selectAmount(this, 20000)">$20.000</div>
-                                    <div class="amount-option" onclick="selectAmount(this, 50000)">$50.000</div>
-                                    <div class="amount-option selected" onclick="selectAmount(this, 100000)">$100.000</div>
-                                    <div class="amount-option" onclick="selectAmount(this, 200000)">$200.000</div>
+                                    <div class="amount-option" onclick="selectAmount('Online', 20000)">$20.000</div>
+                                    <div class="amount-option" onclick="selectAmount('Online', 50000)">$50.000</div>
+                                    <div class="amount-option selected" onclick="selectAmount('Online', 100000)">$100.000</div>
+                                    <div class="amount-option" onclick="selectAmount('Online', 200000)">$200.000</div>
                                 </div>
-                                <input type="number" class="form-input" id="donationAmount" placeholder="O ingresa otro monto" value="100000" min="1000">
+                                <input type="number" class="form-input" id="donationAmountOnline" placeholder="O ingresa otro monto" value="100000" min="1000">
                             </div>
 
                             <div class="form-group">
-                                <label for="donationMethod">Metodo de pago</label>
-                                <select class="form-input" id="donationMethod" required>
-                                    <option value="">Selecciona un metodo</option>
-                                    <option value="transferencia">Transferencia bancaria</option>
-                                    <option value="nequi">Nequi</option>
-                                    <option value="daviplata">Daviplata</option>
-                                    <option value="efectivo">Efectivo</option>
-                                </select>
+                                <label for="donationNoteOnline">Mensaje (opcional)</label>
+                                <textarea class="form-input" id="donationNoteOnline" placeholder="Deja un mensaje de apoyo..."></textarea>
                             </div>
 
-                            <div class="form-group">
-                                <label for="donationNote">Mensaje (opcional)</label>
-                                <textarea class="form-input" id="donationNote" placeholder="Deja un mensaje de apoyo..."></textarea>
-                            </div>
-
-                            <div class="form-group">
-                                <label for="donationReceipt">Subir comprobante de transferencia (Obligatorio)</label>
-                                <input type="file" id="donationReceipt" class="form-input" accept="image/*,application/pdf" required style="padding-top: 10px;">
-                                <small style="color: var(--txt3); font-size: 0.8rem; margin-top: 4px; display: block;">Sube la foto o captura de tu transferencia a Bancolombia/Nequi.</small>
-                            </div>
-
-                            <button type="submit" class="btn btn-accent w-full btn-lg">
-                                <i data-lucide="heart" width="18" height="18"></i>
-                                Registrar mi donacion
+                            <button type="submit" class="btn btn-accent w-full btn-lg" style="margin-top: 12px;">
+                                <i data-lucide="credit-card" width="18" height="18"></i>
+                                Donar en linea (PSE/Tarjetas)
                             </button>
                         </form>
                     </div>
@@ -507,7 +537,7 @@
                             <div class="bank-detail">
                                 <div>
                                     <div class="label">Titular</div>
-                                    <div class="value" id="displayTitular">Fundacion Esperanza Viva</div>
+                                    <div class="value" id="displayTitular">Fundación GAP</div>
                                 </div>
                             </div>
                             <div class="bank-detail">
@@ -523,6 +553,32 @@
                                     <div class="value" id="displayNequi">300 123 4567</div>
                                 </div>
                                 <button class="copy-btn" onclick="copyToClipboard(document.getElementById('displayNequi').textContent)">Copiar</button>
+                            </div>
+
+                            <div style="margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--border);">
+                                <h4 style="margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                                    <i data-lucide="upload-cloud" width="18" height="18"></i> Subir comprobante manual
+                                </h4>
+                                <p style="font-size: 0.85rem; color: var(--txt3); margin-bottom: 16px;">Si realizaste una transferencia a estas cuentas, adjunta tu comprobante aqui para verificarla.</p>
+                                
+                                <form id="donationFormManual" onsubmit="submitDonationManual(event)">
+                                    <div class="form-group">
+                                        <label for="donorNameManual">Tu nombre</label>
+                                        <input type="text" class="form-input" id="donorNameManual" placeholder="Ingresa tu nombre" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="donationAmountManual">Monto transferido</label>
+                                        <input type="number" class="form-input" id="donationAmountManual" placeholder="Ej. 50000" required min="1000">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="donationReceiptManual">Foto del comprobante</label>
+                                        <input type="file" id="donationReceiptManual" class="form-input" accept="image/*,application/pdf" required style="padding-top: 10px;">
+                                    </div>
+                                    <button type="submit" class="btn btn-primary w-full" style="background: var(--p600); color: white;">
+                                        <i data-lucide="check-circle" width="18" height="18"></i>
+                                        Confirmar transferencia
+                                    </button>
+                                </form>
                             </div>
                         </div>
 
@@ -565,7 +621,7 @@
                             <textarea id="forumTextarea" placeholder="Que quieres compartir con la comunidad?" onclick="requireLogin('comentar en el foro')"></textarea>
                         </div>
                         <div class="forum-compose-actions">
-                            <button class="btn btn-accent btn-sm" onclick="submitForumPost()">
+                            <button class="btn btn-accent btn-sm" onclick="window.ModernApp.forum.submitForumPost()">
                                 <i data-lucide="send" width="14" height="14"></i>
                                 Publicar
                             </button>
@@ -587,11 +643,162 @@
                 </div>
             </section>
 
+            <!-- PAGINA: VOLUNTARIADO -->
+            <section class="page-section" id="page-voluntariado">
+                <div class="reveal" style="text-align:center; max-width:600px; margin:0 auto 36px;">
+                    <div class="section-overline">
+                        <i data-lucide="users-2" width="16" height="16"></i>
+                        Únete al equipo
+                    </div>
+                    <h2 class="section-title">Programa de Voluntariado</h2>
+                    <p class="section-subtitle">Dona tu tiempo y tus habilidades para transformar vidas. Tu esfuerzo hace la diferencia.</p>
+                </div>
+
+                <div class="donation-form-card reveal" style="max-width: 600px; margin: 0 auto; animation-delay: 0.1s;">
+                    <h3>Inscripción de Voluntarios</h3>
+                    <p class="subtitle">Llena este formulario y nos pondremos en contacto contigo.</p>
+                    
+                    <form id="volunteerForm" onsubmit="submitVolunteer(event)">
+                        <div class="form-group">
+                            <label for="volName">Nombre Completo</label>
+                            <input type="text" class="form-input" id="volName" placeholder="Tu nombre" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="volEmail">Correo Electrónico</label>
+                            <input type="email" class="form-input" id="volEmail" placeholder="correo@ejemplo.com" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="volPhone">Teléfono / WhatsApp</label>
+                            <input type="text" class="form-input" id="volPhone" placeholder="+57 300 000 0000" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="volSkills">Habilidades o Profesión</label>
+                            <input type="text" class="form-input" id="volSkills" placeholder="Ej: Médico, Psicólogo, Logística, etc." required>
+                        </div>
+                        <div class="form-group">
+                            <label for="volAvailability">Disponibilidad de Tiempo</label>
+                            <select class="form-input" id="volAvailability" required>
+                                <option value="">Selecciona tu disponibilidad</option>
+                                <option value="Fines de semana">Fines de semana</option>
+                                <option value="Entre semana">Entre semana (Lunes a Viernes)</option>
+                                <option value="Flexible">Horario flexible</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="volMessage">¿Por qué quieres unirte? (Opcional)</label>
+                            <textarea class="form-input" id="volMessage" placeholder="Cuéntanos brevemente tu motivación..."></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-accent w-full btn-lg" style="margin-top: 12px;">
+                            <i data-lucide="send" width="18" height="18"></i>
+                            Enviar mi solicitud
+                        </button>
+                    </form>
+                </div>
+            </section>
+
+            <!-- PAGINA: MI CUENTA -->
+            <section class="page-section" id="page-mi-cuenta">
+                <div class="admin-header">
+                    <h2>Mi Perfil</h2>
+                    <p style="color: var(--txt2);">Consulta tu estado y aportes a la fundación.</p>
+                </div>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-title">Total Donado</div>
+                        <div class="stat-value" id="miTotalDonado">$0</div>
+                        <div class="stat-icon"><i data-lucide="heart" width="24" height="24"></i></div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-title">Rol en la Fundación</div>
+                        <div class="stat-value" id="miRolTexto" style="font-size: 1.5rem;">Usuario</div>
+                        <div class="stat-icon"><i data-lucide="shield-check" width="24" height="24"></i></div>
+                    </div>
+                </div>
+
+                <div class="card mt-3">
+                    <div class="card-header">
+                        <h3 class="card-title"><i data-lucide="history" width="20" height="20"></i> Mis Donaciones</h3>
+                    </div>
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Monto</th>
+                                    <th>Método</th>
+                                    <th>Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody id="miHistorialDonaciones">
+                                <!-- Se llenará con JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- PAGINA: ACTIVIDADES DE VOLUNTARIADO -->
+            <section class="page-section" id="page-actividades">
+                <div class="admin-header">
+                    <div>
+                        <h2>Actividades de Voluntariado</h2>
+                        <p style="color: var(--txt2);">Consulta las brigadas y acciones programadas.</p>
+                    </div>
+                    <button class="btn btn-primary lider-only" onclick="document.getElementById('modalNuevaActividad').classList.add('active', 'show')">
+                        <i data-lucide="plus" width="18" height="18"></i> Nueva Actividad
+                    </button>
+                </div>
+
+                <div class="grid" id="listaActividadesVoluntarios" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 24px; margin-top: 24px;">
+                    <!-- Se llenará con JS -->
+                </div>
+            </section>
+
+            <!-- MODAL NUEVA ACTIVIDAD -->
+            <div class="modal-overlay" id="modalNuevaActividad">
+                <div class="modal">
+                    <div class="modal-content">
+                        <button class="modal-close" onclick="this.closest('.modal-overlay').classList.remove('active', 'show')">
+                            <i data-lucide="x" width="24" height="24"></i>
+                        </button>
+                        <h2>Publicar Actividad</h2>
+                        <form id="formNuevaActividad" style="margin-top:20px; display:flex; flex-direction:column; gap:16px;" onsubmit="event.preventDefault(); window.ModernApp.activities.crearActividad(this);">
+                            <div>
+                                <label>Título de la Brigada/Acción</label>
+                                <input type="text" name="titulo" required class="form-input">
+                            </div>
+                            <div>
+                                <label>Fecha y Hora</label>
+                                <input type="datetime-local" name="fecha" required class="form-input">
+                            </div>
+                            <div>
+                                <label>Descripción y Ubicación</label>
+                                <textarea name="descripcion" rows="4" required class="form-input"></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary" style="width:100%; justify-content:center;">
+                                <i data-lucide="save" width="18" height="18"></i> Publicar
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
             <!-- PAGINA: ADMIN DASHBOARD -->
             <section class="page-section" id="page-admin-dashboard">
                 <div class="admin-header">
-                    <h2>&#128202; Panel de Administracion</h2>
-                    <p>Bienvenido al centro de control de la fundacion.</p>
+                    <div>
+                        <h2>&#128202; Dashboard</h2>
+                        <p>Resumen general del impacto de la fundacion.</p>
+                    </div>
+                    <div style="display: flex; gap: 8px;">
+                        <button class="btn btn-outline btn-sm" onclick="exportDashboardExcel()" style="color: #047857; border-color: #047857;">
+                            <i data-lucide="table" width="16" height="16"></i> Excel
+                        </button>
+                        <button class="btn btn-outline btn-sm" onclick="exportDashboardPDF()" style="color: #b91c1c; border-color: #b91c1c;">
+                            <i data-lucide="file-text" width="16" height="16"></i> PDF
+                        </button>
+                    </div>
                 </div>
 
                 <div class="metrics-grid">
@@ -667,10 +874,17 @@
                 <div class="data-table-wrapper">
                     <div class="data-table-header">
                         <h3>Lista de donaciones</h3>
-                        <button class="btn btn-outline btn-sm" onclick="loadDonorsTable()">
-                            <i data-lucide="refresh-cw" width="14" height="14"></i>
-                            Actualizar
-                        </button>
+                        <div style="display: flex; gap: 8px;">
+                            <button class="btn btn-outline btn-sm" onclick="exportDonorsExcel()" style="color: #047857; border-color: #047857;">
+                                <i data-lucide="table" width="14" height="14"></i> Excel
+                            </button>
+                            <button class="btn btn-outline btn-sm" onclick="exportDonorsPDF()" style="color: #b91c1c; border-color: #b91c1c;">
+                                <i data-lucide="file-text" width="14" height="14"></i> PDF
+                            </button>
+                            <button class="btn btn-outline btn-sm" onclick="loadDonorsTable()">
+                                <i data-lucide="refresh-cw" width="14" height="14"></i> Refrescar
+                            </button>
+                        </div>
                     </div>
                     <table class="data-table" id="donorsTable">
                         <thead>
@@ -747,6 +961,138 @@
                     </div>
                 </div>
             </section>
+
+            <!-- PAGINA: ADMIN GESTION DE VOLUNTARIOS -->
+            <section class="page-section" id="page-admin-voluntarios">
+                <div class="admin-header">
+                    <h2>Gestión de Voluntarios</h2>
+                    <button class="btn btn-primary btn-sm" onclick="loadVolunteers()">
+                        <i data-lucide="refresh-cw" width="16" height="16"></i> Refrescar
+                    </button>
+                </div>
+                
+                <!-- Tabs para Voluntarios -->
+                <div style="display: flex; gap: 16px; margin-top: 24px; border-bottom: 1px solid var(--b2);">
+                    <button id="tabPendingBtn" onclick="switchVolunteerTab('pending')" style="background: none; border: none; font-size: 1.05rem; color: var(--txt1); font-weight: 600; cursor: pointer; padding: 12px 16px; border-bottom: 2px solid var(--p500); display: flex; align-items: center; gap: 8px; transition: 0.2s;">
+                        <i data-lucide="clock" width="18" height="18"></i> Solicitudes Pendientes <span class="badge warning" id="pendingCountBadge" style="margin-left: 4px;">0</span>
+                    </button>
+                    <button id="tabAcceptedBtn" onclick="switchVolunteerTab('accepted')" style="background: none; border: none; font-size: 1.05rem; color: var(--txt2); font-weight: 500; cursor: pointer; padding: 12px 16px; border-bottom: 2px solid transparent; display: flex; align-items: center; gap: 8px; transition: 0.2s;">
+                        <i data-lucide="user-check" width="18" height="18"></i> Voluntarios Aceptados <span class="badge success" id="acceptedCountBadge" style="margin-left: 4px;">0</span>
+                    </button>
+                    <div id="volunteerExportButtons" class="hidden" style="margin-left: auto; display: flex; gap: 8px; align-items: center; padding-bottom: 8px;">
+                        <button class="btn btn-outline btn-sm" onclick="exportVolunteersExcel()" style="color: #047857; border-color: #047857;">
+                            <i data-lucide="table" width="14" height="14"></i> Excel
+                        </button>
+                        <button class="btn btn-outline btn-sm" onclick="exportVolunteersPDF()" style="color: #b91c1c; border-color: #b91c1c;">
+                            <i data-lucide="file-text" width="14" height="14"></i> PDF
+                        </button>
+                    </div>
+                </div>
+
+                <div style="margin-top: 24px;">
+                    <!-- Solicitudes Pendientes -->
+                    <div id="viewPending">
+                        <div class="card" style="padding: 0; overflow: hidden; animation: fadeIn 0.3s ease;">
+                            <div style="overflow-x: auto;">
+                                <table class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Fecha</th>
+                                            <th>Nombre</th>
+                                            <th>Contacto</th>
+                                            <th>Habilidades</th>
+                                            <th>Disponibilidad</th>
+                                            <th>Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="volunteersPendingBody">
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Voluntarios Aceptados -->
+                    <div id="viewAccepted" class="hidden">
+                        <div class="card" style="padding: 0; overflow: hidden; animation: fadeIn 0.3s ease;">
+                            <div style="overflow-x: auto;">
+                                <table class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Fecha</th>
+                                            <th>Nombre</th>
+                                            <th>Contacto</th>
+                                            <th>Habilidades</th>
+                                            <th>Disponibilidad</th>
+                                            <th>Estado</th>
+                                            <th>Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="volunteersAcceptedBody">
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Asistencia Actividades -->
+                    <div id="viewActivities" class="hidden">
+                        <div class="card" style="padding: 0; overflow: hidden; animation: fadeIn 0.3s ease;">
+                            <div style="overflow-x: auto;">
+                                <table class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Fecha</th>
+                                            <th>Actividad</th>
+                                            <th>Confirmados</th>
+                                            <th>Acciones y Reportes</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="volunteersActivitiesBody">
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- PAGINA: ADMIN GESTION DE USUARIOS -->
+            <section class="page-section" id="page-admin-usuarios">
+                <div class="admin-header">
+                    <h2>Gestión de Usuarios</h2>
+                    <p style="color: var(--txt2); font-size: 0.95rem;">Administra los roles y cuentas de todas las personas registradas.</p>
+                    <div style="display: flex; gap: 10px; margin-top: 16px;">
+                        <button class="btn btn-primary btn-sm" onclick="window.ModernApp.adminUsers.loadUsersAdmin()">
+                            <i data-lucide="refresh-cw" width="16" height="16"></i> Refrescar Lista
+                        </button>
+                        <button class="btn btn-primary btn-sm" onclick="window.openAddUserModal()">
+                            <i data-lucide="user-plus" width="16" height="16"></i> Añadir Usuario
+                        </button>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 24px;">
+                    <div class="card" style="padding: 0; overflow: hidden; animation: fadeIn 0.3s ease;">
+                        <div style="overflow-x: auto;">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Usuario</th>
+                                        <th>Email</th>
+                                        <th>Fecha Registro</th>
+                                        <th>Rol</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="adminUsersTableBody">
+                                    <!-- Generado desde JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
         </main>
     </div>
 
@@ -782,6 +1128,30 @@
                         </button>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE AYUDA / CONTACTO -->
+    <div id="helpModal" class="modal-overlay" onclick="if(event.target === this) closeHelpModal()">
+        <div class="modal-content" style="position: relative; width: 90%; max-width: 420px; padding: 40px 32px; text-align: center; border-top: 4px solid var(--p500); background: var(--bg1); box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); border-radius: 16px; animation: scaleIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);">
+            <button class="modal-close" onclick="closeHelpModal()">&times;</button>
+            <div style="width: 56px; height: 56px; border-radius: 50%; background: var(--p50); color: var(--p600); display: flex; align-items: center; justify-content: center; margin: 0 auto 16px;">
+                <i data-lucide="life-buoy" width="28" height="28"></i>
+            </div>
+            <h2 style="font-size: 1.25rem; font-weight: 700; color: var(--txt1); margin-bottom: 8px;">Centro de Ayuda</h2>
+            <p style="color: var(--txt2); font-size: 0.95rem; margin-bottom: 24px;">¿Tienes alguna duda o necesitas soporte técnico? Contáctanos a través de nuestros canales oficiales.</p>
+            
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+                <a href="https://wa.me/573001234567" target="_blank" class="btn" style="background: #25D366; color: white; justify-content: center;">
+                    <i data-lucide="message-circle" width="18" height="18"></i> WhatsApp (+57 300 123 4567)
+                </a>
+                <a href="mailto:soporte@fundacion.org" class="btn" style="background: var(--p600); color: white; justify-content: center;">
+                    <i data-lucide="mail" width="18" height="18"></i> Correo Electrónico
+                </a>
+                <a href="tel:+573001234567" class="btn btn-outline" style="justify-content: center;">
+                    <i data-lucide="phone" width="18" height="18"></i> Llamada Telefónica
+                </a>
             </div>
         </div>
     </div>
@@ -991,7 +1361,50 @@
         </div>
     </div>
 
+    <!-- MODAL AÑADIR USUARIO (ADMIN/LIDER) -->
+    <div id="addUserModal" class="post-viewer-overlay hidden" style="z-index: 10001; align-items: center; justify-content: center; display: flex; backdrop-filter: blur(8px);">
+        <div class="modal-content" style="background: var(--bg1); width: 90%; max-width: 420px; max-height: 90vh; overflow-y: auto; border-radius: 24px; padding: 32px; position: relative; box-shadow: 0 20px 40px rgba(0,0,0,0.2); animation: slideUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);">
+            <button onclick="window.closeAddUserModal()" class="close-modal-btn" style="position: absolute; top: 20px; right: 20px; width: 36px; height: 36px; border-radius: 50%; background: var(--bg2); border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--txt2); transition: all 0.2s;"><i data-lucide="x" style="width: 18px; height: 18px;"></i></button>
+            
+            <div style="text-align: center; margin-bottom: 24px;">
+                <div style="width: 56px; height: 56px; border-radius: 50%; background: var(--p100); color: var(--p600); display: flex; align-items: center; justify-content: center; margin: 0 auto 16px auto;">
+                    <i data-lucide="user-plus" style="width: 28px; height: 28px;"></i>
+                </div>
+                <h3 style="font-size: 1.4rem; color: var(--txt1); margin: 0; font-weight: 700;">Añadir Usuario</h3>
+                <p style="color: var(--txt2); font-size: 0.9rem; margin-top: 8px;">Registra manualmente un nuevo Administrador o Líder</p>
+            </div>
+            
+            <form id="addUserForm" onsubmit="window.submitAddUser(event)" style="display: flex; flex-direction: column; gap: 16px; margin-bottom: 24px;">
+                <div class="form-group">
+                    <label for="addUserName">Nombre Completo</label>
+                    <input type="text" id="addUserName" class="form-input" required placeholder="Ej: Juan Pérez">
+                </div>
+                <div class="form-group">
+                    <label for="addUserEmail">Correo Electrónico</label>
+                    <input type="email" id="addUserEmail" class="form-input" required placeholder="admin@fundacion.org">
+                </div>
+                <div class="form-group">
+                    <label for="addUserPassword">Contraseña</label>
+                    <input type="password" id="addUserPassword" class="form-input" required placeholder="Mínimo 6 caracteres" minlength="6">
+                </div>
+                <div class="form-group">
+                    <label for="addUserRole">Rol del Usuario</label>
+                    <select id="addUserRole" class="form-input" required style="cursor:pointer; appearance: auto;">
+                        <option value="Admin">Administrador (Acceso Total)</option>
+                        <option value="Lider">Líder (Acceso Parcial)</option>
+                    </select>
+                </div>
+                <button type="submit" id="btnSubmitAddUser" class="btn btn-primary" style="width: 100%; justify-content: center; padding: 14px; font-size: 1rem; border-radius: 12px; margin-top: 8px;">
+                    <i data-lucide="save"></i> Crear Usuario
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Arquitectura Moderna (Módulos ES6) -->
+    <script type="module" src="js/main.js?v=24"></script>
+    
     <!-- Logica de la aplicacion -->
-    <script src="app.js"></script>
+    <script src="app.js?v=24"></script>
 </body>
 </html>

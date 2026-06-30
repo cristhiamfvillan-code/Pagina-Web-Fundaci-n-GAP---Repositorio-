@@ -463,6 +463,7 @@ body.is-admin .admin-only { display:flex; }
    ============================================================ */
 .main-content {
     flex: 1;
+    min-width: 0;
     margin-left: var(--sidebar-w);
     min-height: 100vh;
     transition: margin-left var(--t3);
@@ -1387,6 +1388,9 @@ select.form-input { cursor:pointer; }
     border-radius: var(--r3);
     overflow-x: auto;
     box-shadow: var(--sh0);
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
 }
 .data-table-header {
     display: flex;
@@ -1636,6 +1640,25 @@ body.is-admin .mod-actions { display:flex; }
 .empty-state p  { font-size:.88rem; max-width:380px; margin:0 auto; line-height:1.7; }
 
 /* ============================================================
+   BADGES
+   ============================================================ */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 3px 10px;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+}
+.badge.success { background: rgba(16, 185, 129, 0.12); color: #047857; }
+.badge.warning { background: rgba(245, 158, 11, 0.15); color: #b45309; }
+.badge.danger  { background: rgba(239, 68, 68, 0.12); color: #b91c1c; }
+.badge.secondary { background: var(--bg2); color: var(--txt3); }
+
+
+/* ============================================================
    SECTION TITLES
    ============================================================ */
 .section-title    { font-size:clamp(1.6rem,3.5vw,2.3rem); margin-bottom:9px; letter-spacing:-.03em; }
@@ -1663,7 +1686,33 @@ body.is-admin .mod-actions { display:flex; }
 .mt-2 { margin-top:16px; }
 .mt-3 { margin-top:24px; }
 .mb-2 { margin-bottom:16px; }
-.hidden { display:none !important; }
+.hidden {
+    display: none !important;
+}
+
+.logged-in-only {
+    display: none !important;
+}
+body.is-logged-in .logged-in-only {
+    display: flex !important;
+}
+
+.voluntario-only {
+    display: none !important;
+}
+body.is-voluntario .voluntario-only,
+body.is-lider .voluntario-only,
+body.is-admin .voluntario-only {
+    display: flex !important;
+}
+
+.lider-only {
+    display: none !important;
+}
+body.is-lider .lider-only,
+body.is-admin .lider-only {
+    display: flex !important;
+}
 
 /* ============================================================
    VARIABLES LEGACY (compatibilidad con código anterior)
